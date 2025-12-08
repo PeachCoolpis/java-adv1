@@ -17,8 +17,8 @@ public class VolatileFlagMain {
         log("main 종료");
     }
     static class MyTask implements Runnable {
-        boolean runFlag = true;
-        //volatile boolean runFlag = true;
+        // boolean runFlag = true;
+        volatile boolean runFlag = true;
         @Override
         public void run() {
             log("task 시작");
