@@ -8,7 +8,7 @@
   - 예: `8. 생산자 소비자 문제1.pdf`
 - 코드를 검토할 때는 해당 장의 PDF 코드와 비교해서 차이를 알려준다.
 
-## 진도 현황 (2026-11-07 기준, 9장 예제4까지)
+## 진도 현황 (2026-11-08 기준, 9장 예제6까지)
 
 공부 방식: 강의 영상 → PDF 보면서 코드 직접 따라 작성 → 실행 로그 확인 → 막히면 Claude에게 질문 → 장/절 단위로 커밋
 
@@ -29,8 +29,12 @@
 - [x] `wait`/`notify`의 한계: 대기 집합이 하나라 생산자·소비자가 섞임 → 같은 편을 깨우는 비효율 + 스레드 기아. `notifyAll()`은 기아만 해결
 
 ### 9장 세부 진도
-- [x] 예제4 (`BoundedQueueV4`): `ReentrantLock` + `Condition`
-- [ ] 이후 절 ← **다음 할 차례** (생산자/소비자 대기실 분리 → `BlockingQueue`)
+- [x] 예제4 (`BoundedQueueV4`): `ReentrantLock` + `Condition` 1개 → V3와 동작 같음 (도구만 바꿈)
+- [x] 예제5 (`BoundedQueueV5`): `Condition` 2개로 생산자/소비자 대기실 분리 → "손님 한 분 / 직원 한 분 나와 주세요"
+- [x] 스레드의 대기, 중간 정리
+- [x] 예제6 (`BoundedQueueV6_1`): `ArrayBlockingQueue` 사용 → V5를 자바가 완성품으로 만든 것 (내부에 `ReentrantLock` + `notFull`/`notEmpty` 대기실)
+- [ ] `BlockingQueue` 기능 설명 / 기능 확인 ← **다음 할 차례** (PDF 9장)
+- [ ] 정리
 
 ### 이해한 개념 (질문하며 정리한 것)
 - **임계 영역** = 화장실 변기 칸. `synchronized`(문 잠금)로 한 번에 한 스레드만 들어감.
@@ -41,6 +45,12 @@
 - **V3의 한계** = 카페 라운지 하나에 바리스타(생산자)와 손님(소비자)이 섞여 앉아 있고 "아무나 한 명 나와 주세요"밖에 못 함. 해결책 = 대기실을 나눠서 "손님 한 분 나와 주세요"(`Condition.signal()`) → 사용자가 스스로 떠올림.
 - **`ReentrantLock`** (리엔트런트 락) = 재진입 가능한 락. 이미 가진 락은 다시 들어갈 수 있음(횟수 셈). `lock()` 후 반드시 `finally`에서 `unlock()`. `synchronized`의 기능 많은 버전(`tryLock`, 공정 모드, `Condition`).
 - **LB 환경의 동시성**: `synchronized`는 JVM 하나 안에서만 통함. 서버 여러 대면 DB 락(원자적 UPDATE → 낙관적/비관적 락) 또는 Redis 분산 락. DB까지 분산되는 경우는 나중에 필요할 때 보기로 함.
+- **CAS** (Compare-And-Swap) = 락 없이 "값이 그대로면 바꾸고, 바뀌었으면 재시도". DB 낙관적 락(`@Version`)의 메모리 버전. `AtomicInteger`, `ConcurrentHashMap` 내부에서 사용. (강의에서는 아직 안 나옴, 미리 질문함)
+- **요즘 실무 도구**: 직접 락을 짜기보다 완성품 사용 → `AtomicLong`/`LongAdder`, `ConcurrentHashMap`, `ExecutorService`/`@Async`, `CompletableFuture`, `BlockingQueue`, 가상 스레드(Java 21+). 지금 배우는 건 이 도구들의 내부 부품.
+- **`@Async`** = 비동기 실행. 내부는 생산자 소비자 구조(작업 큐 = `BlockingQueue` + 스레드 풀). 실무에서 써 봤지만 원리는 몰랐음.
+
+### 나중에 물어볼 것
+- `@Async` 원리 → `ExecutorService`를 배울 때 먼저 꺼내서 연결해 주기 (같은 클래스 호출 안 됨, 기본 큐 무제한 문제 등)
 
 ### 학습 메모
 - 2025-03 시작, 중간에 공백이 길었다가 다시 이어서 하는 중.
